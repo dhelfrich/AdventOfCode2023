@@ -197,11 +197,13 @@ def dijkstra4(grid, start):
     vs = g.vs["name"]
 
     ig.plot(g, vertex_label = g.vs["name"], target = './Day17/test.png')
-    ends = ["({}, {}, {})".format(rows-1, cols - 1, i) for i in [3, 4, 5, 9, 10, 11]]
+    endsD = [k for k, (di, dj) in enumerate(displacements) if di > 0 or dj > 0]
+    ends = ["({}, {}, {})".format(rows-1, cols - 1, i) for i in endsD]
     result = g.distances("(0, 0, 2)", ends, weights='weight')
+    print(result)
     paths2 = []
-    # paths = g.get_shortest_paths("(0, 0, 2)", ends, weights='weight')
-    # paths2 = [[vs[v] for v in path] for path in paths]
+    paths = g.get_shortest_paths("(0, 0, 2)", ends, weights='weight')
+    paths2 = [[vs[v] for v in path] for path in paths]
     return result, paths2
 
 def getNeighbors4(grid, node):
@@ -211,22 +213,22 @@ def getNeighbors4(grid, node):
     neighbors = []
     displacements = [(i, 0) for i in range(-10, 11) if i != 0] + [(0, j) for j in range(-10, 11) if j != 0]
     di, dj = displacements[t]
-    if i > 0 and di != -3 and di <= 0:
+    if i > 0 and di != -10 and (di < 0 or dj >= 4 or dj <= -4):
         if di < 0:
             neighbors.append(((i - 1, j), (di - 1, 0)))
         else:
             neighbors.append(((i - 1, j), (-1, 0)))
-    if i < rows - 1 and di != 3 and di >= 0:
+    if i < rows - 1 and di != 10 and (di > 0 or dj >= 4 or dj <= -4):
         if di > 0:
             neighbors.append(((i + 1, j), (di + 1, 0)))
         else:
             neighbors.append(((i + 1, j), (1, 0)))
-    if j > 0 and dj != -3 and dj <= 0:
+    if j > 0 and dj != -10 and (dj < 0 or di >= 4 or di <= -4):
         if dj < 0:
             neighbors.append(((i, j - 1), (0, dj - 1)))
         else:
             neighbors.append(((i, j - 1), (0, -1)))
-    if j < cols - 1 and dj != 3 and dj >= 0:
+    if j < cols - 1 and dj != 10 and (dj > 0 or di >= 4 or di <= -4):
         if dj > 0:
             neighbors.append(((i, j + 1), (0, dj + 1)))
         else:
@@ -284,6 +286,17 @@ def main():
     # for p in paths[2]:
     #     v = eval(p)
     #     print(v[0], v[1], toDisplacement(v[2]))
-    dijkstra4(grid, (0, 0, 2))
+    # i, j, di, dj = 4, 10, 4, 0
+    # displacements = [(i, 0) for i in range(-10, 11) if i != 0] + [(0, j) for j in range(-10, 11) if j != 0]
+    # node = (i, j, displacements.index((di, dj)))
+    # ns = getNeighbors4(grid, node)
+    # for n in ns:
+    #     print(n[0], n[1], displacements[n[2]])
+    results, paths = dijkstra4(grid, (0, 0, 2))
+    print(results)
+    # for i, p in enumerate(paths):
+    #     print(i, results[0][i])
+    #     drawPath2(grid, p)
+    print(results)
 
 main()
