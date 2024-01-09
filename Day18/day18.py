@@ -160,6 +160,43 @@ def collapse(directions, insideQ):
         totalArea += (directions[0][1] + 1) * (directions[1][1] + 1)
     return directions, totalArea
 
+def calcArea(directions):
+    vs = findVertices(directions)
+    imin, imax, jmin, jmax = 0, 0, 0, 0
+    for i, j in vs:
+        if i < imin:
+            imin = i
+        if j < jmin:
+            jmin = j
+        if i > imax:
+            imax = i
+        if j > jmax:
+            jmax = j
+    rows = imax - imin + 1
+    cols = jmax - jmin + 1
+    # vs = [(i - imin, j - jmin) for i, j in vs]
+    vs2 = []
+    n = len(directions)
+    for t, (i, j) in enumerate(vs):
+        DPrev = directions[((t - 1) % n)][0]
+        DNext = directions[t % n][0]
+        if (DPrev, DNext) in [('U', 'R'), ('R', 'U')]:
+            vs2.append((i, j))
+        elif (DPrev, DNext) in [('U', 'L'), ('L', 'U')]:
+            vs2.append((i + 1 , j ))
+        elif (DPrev, DNext) in [('D', 'R'), ('R', 'D')]:
+            vs2.append((i, j + 1))
+        elif (DPrev, DNext) in [('D', 'L'), ('L', 'D')]:
+            vs2.append((i + 1, j + 1))
+    area = 0
+    for i in range(n):
+        x1, y1 = vs2[i - 1]
+        x2, y2 = vs2[i]
+        area += x1*y2 - x2*y1
+    
+    return area/2
+
+
 
 def dirToInt(direction):
     char, l = direction
@@ -197,9 +234,11 @@ def parseInput2(input): #just reverse color and distance
     lines = input.split('\n')
     dirs = []
     for line in lines:
-        m = re.fullmatch(r'([UDLR]) ([0-9]+) \(#(.*)\)',  line)
+        m = re.fullmatch(r'([UDLR]) ([0-9]+) \(#([0-9abcdef]{5})([0-9])\)',  line)
         g = m.groups()
-        dirs.append((g[0], int('0x' + g[2], 0)))
+        dist = int('0x' + g[2], 0)
+        direction = ['R', 'D', 'L', 'U'][int(g[3])]
+        dirs.append((direction, dist))
     return dirs
 
 def countInsideSlow(directions):
@@ -214,15 +253,17 @@ def countInsideSlow(directions):
 
 def main():
     data = open("./Day18/day18.txt").read()  # read the file
-    data = open("./Day18/day18Sample.txt").read()  # read the file
-    directions = parseInput(data)
+    # data = open("./Day18/day18Sample.txt").read()  # read the file
+    # data = open("./Day18/day18Sample2.txt").read()  # read the file
+    directions = parseInput2(data)
+    print(calcArea(directions))
     # directions = directions[-2:] + directions[:-2] #to make sample match the full problem's convexity
-    vs = findVertices(directions)
-    print(countInsideSlow(directions))
+    # vs = findVertices(directions)
+    # print(countInsideSlow(directions))
 
     # cols = len(g[0])
-    c = countInside(directions)
-    print(c)
+    # c = countInside(directions)
+    # print(c)
     # for line in g:
     #     print(''.join(line[:cols//2]))
     # print('\n\n')
