@@ -14,7 +14,7 @@ def parseLine(line, count):
     numListOut = [int(num) for num in numList]*count
 
     if count == 1:
-        lineOut = lineS[0]
+        lineOut = lineS[0] + '?'
     elif count == 2:
         lineOut = lineS[0] + '?' + lineS[0]
     elif count == 3:
