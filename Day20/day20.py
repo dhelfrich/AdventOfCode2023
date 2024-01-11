@@ -22,6 +22,7 @@ class Module:
         self.lows = 0
         self.highs = 0
         self.flips = 0
+        self.on = 0
         # pprint(vars(self))
 
     
@@ -44,6 +45,9 @@ class Module:
         return self.dests
     def getType(self):
         return self.moduleType
+    def reset(self):
+        self.on = 0
+        self.output = 0
 
 class FlipFlop(Module):
     def __init__(self, init_string):
@@ -108,7 +112,12 @@ class Circuit:
                 if m2 and m2.moduleType == '&':
                     self.modules[d].setInput(m.getName(), 0)
         self.moduleCount = len(self.modules)
-        self.activity = dict(zip(self.modules.keys(), [0 for i in range(self.moduleCount)] ))
+        self.period = dict(zip(self.modules.keys(), [0 for i in range(self.moduleCount)] ))
+    
+    def reset(self):
+        for m in self.modules.values():
+            self.cycles = 0
+            m.reset()
 
     def sendPulse(self, source, dest, value):
         # print(source, dest, value)
@@ -123,18 +132,24 @@ class Circuit:
             for d in dests or []:
                 self.queue.append((module.getName(), d, module.getOutput())) 
 
-    def run(self, cycles):
+    def run(self, cycles, mod = 'rx'):
         for i in range(cycles):
-            self.sendPulse('button', 'broadcaster', 0)
+            self.sendPulse('button', 'BB', 0)
+            self.cycles += 1
             while self.queue:
                 (source, dest, value) = self.queue.popleft()
                 self.sendPulse(source, dest, value)
-                self.activity[dest] += 1
                 
-        self.cycles += 1
 
     def getPeriod(self, module):
-        
+        for i in range(5000):
+            self.sendPulse('button', 'BB', 0)
+            self.cycles += 1
+            while self.queue:
+                (source, dest, value) = self.queue.popleft()
+                self.sendPulse(source, dest, value)
+                if dest == module and value == 0:
+                    return self.cycles
     
     def printModules(self):
         for t in ['&', '%']:
@@ -151,6 +166,7 @@ class Circuit:
         fig, ax = plt.subplots()
         layout = g.layout("kk")
         g.vs["label"] = g.vs["name"] 
+        g.vs["color"] = ["green" if self.modules[m].getType() == '&' else 'pink' for m in g.vs["name"]]
         ig.plot(g, layout=layout, margin=20, target=ax, vertex_size=50)
         ig.plot(g, layout=layout, margin=20, target="./Day20/graph.png", vertex_size=50)
         plt.show()
@@ -159,8 +175,17 @@ def main():
     data = open("./Day20/day20.txt").read()  # read the file
     # data = open("./Day20/day20Sample.txt").read()  # read the file
     circuit = Circuit(data)
-    circuit.drawGraph()
+    # circuit.drawGraph() #from this you can see the major nodes are hf jg jm rh
     circuit.run(1000)
     print(circuit.lowCount * circuit.highCount)
+    circuit = Circuit(data)
+    hf = circuit.getPeriod('hf')
+    circuit = Circuit(data)
+    jg = circuit.getPeriod('jg')
+    circuit = Circuit(data)
+    rh = circuit.getPeriod('rh')
+    circuit = Circuit(data)
+    jm = circuit.getPeriod('jm')
+    print("periods: ", hf, jg, jm, rh, "product: ", hf * jg * jm * rh)
 
 main()
