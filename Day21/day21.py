@@ -18,7 +18,7 @@ class Grid(str):
         self.g.vs["color"] = [colors[i] for i in self.g.vs["char"]]
         # ig.plot(self.g,layout=layout, target='./Day21/graph.png', vertex_size = 40, vertex_label_size = 8)
         # plt.show()
-
+        
         return self.g
     
     def findReachable(self, n=64): #starting at S, in N moves
